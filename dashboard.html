@@ -1,0 +1,766 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Hazard Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('https://wallpapers.com/images/hd/doddle-chemistry-chemical-formulas-tuy5q0hvwki0yyli.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 500px;
+            max-width: 100%;
+            text-align: center;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .container:hover {
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+        input[type="text"] {
+            width: calc(100% - 16px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.02);
+        }
+        .result {
+            margin-top: 20px;
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 16px;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        #pieChart {
+            display: block; /* Ensure it behaves like a block element */
+            margin: 20px auto;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <input type="text" id="chemicalInput" placeholder="Enter a Chemical Name">
+        <button onclick="displayChemicalDetails()">Search</button>
+        <h1 id="chemicalName"></h1>
+        <p id="toxicityCategory"></p>
+        <p id="healthHazards"></p>
+        <p id="advantages"></p>
+        <p id="disadvantages"></p>
+        <canvas id="pieChart"></canvas>
+    </div>
+    <script>
+        // Declare pieChart globally
+        let pieChart;
+
+        const chemicals =  {
+            "sulfuric acid": {
+                "toxicity_category": "Category 2",
+                "health_hazards": "Corrosive, severe burns",
+                "advantages": "Strong acid, highly effective in industrial processes",
+                "disadvantages": "Corrosive, causes severe burns, reacts violently with water"
+            },
+            "sodium chloride": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Excessive intake can lead to hypertension",
+                "advantages": "Essential for life, widely used as table salt and in food preservation",
+                "disadvantages": "Excessive intake can lead to health issues like hypertension"
+            },
+            "sodium hydroxide": {
+                "toxicity_category": "Category 1",
+                "health_hazards": "Highly corrosive. Causes severe skin burns and eye damage. Harmful to aquatic life.",
+                "advantages": "Used in the production of soaps, detergents, and paper",
+                "disadvantages": "Highly corrosive, can cause severe burns, and is irritating to the eyes and respiratory system"
+            },
+            "ethanol": {
+                "toxicity_category": "Category 3",
+                "health_hazards": "Flammable, toxic in high doses",
+                "advantages": "Used as an alcohol, solvent, and fuel additive",
+                "disadvantages": "Flammable, can be toxic in high doses"
+            },
+            "ammonia": {
+                "toxicity_category": "Category 2",
+                "health_hazards": "Toxic, corrosive, respiratory irritant",
+                "advantages": "Important in the production of fertilizers and cleaning products",
+                "disadvantages": "Toxic, corrosive, and irritating to the eyes and respiratory system"
+            },
+            "carbon dioxide": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Contributes to global warming, asphyxiation risk",
+                "advantages": "Essential for photosynthesis, used in fire extinguishers and carbonated beverages",
+                "disadvantages": "Contributes to global warming in high concentrations"
+            },
+            "hydrogen peroxide": {
+                "toxicity_category": "Category 3",
+                "health_hazards": "Irritating, can cause burns",
+                "advantages": "Effective disinfectant and oxidizing agent, used in bleaching and hair coloring",
+                "disadvantages": "Irritating to the skin and eyes, can cause burns in concentrated form"
+            },
+            "nitric acid": {
+                "toxicity_category": "Category 2",
+                "health_hazards": "Highly corrosive, toxic fumes",
+                "advantages": "Used in the production of fertilizers, explosives, and pharmaceuticals",
+                "disadvantages": "Highly corrosive, toxic fumes, and can cause severe burns"
+            },
+            "chlorine": {
+                "toxicity_category": "Category 2",
+                "health_hazards": "Toxic, corrosive, respiratory irritant",
+                "advantages": "Effective disinfectant, used in water treatment and bleaching",
+                "disadvantages": "Toxic, corrosive, and irritating to the eyes and respiratory system"
+            },
+            "methanol": {
+                "toxicity_category": "Category 1",
+                "health_hazards": "Highly toxic, can cause blindness",
+                "advantages": "Used as a fuel, solvent, and in the production of other chemicals",
+                "disadvantages": "Highly toxic, can cause blindness or death if ingested"
+            },
+            "acetone": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Flammable, respiratory irritant",
+                "advantages": "Effective solvent, used in the production of various chemicals and as a nail polish remover",
+                "disadvantages": "Flammable, can cause irritation to the eyes and respiratory system"
+            },
+            "hydrochloric acid": {
+                "toxicity_category": "Category 1",
+                "health_hazards": "Highly corrosive, severe burns",
+                "advantages": "Used in the production of fertilizers, pharmaceuticals, and as a cleaning agent",
+                "disadvantages": "Highly corrosive, can cause severe burns, and releases toxic fumes"
+            },
+            "calcium chloride": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Can cause irritation",
+                "advantages": "Used as a desiccant, ice-melting agent, and in the production of other chemicals",
+                "disadvantages": "Can cause irritation to the eyes and skin"
+            },
+            "potassium hydroxide": {
+                "toxicity_category": "Category 1",
+                "health_hazards": "Highly corrosive, severe burns",
+                "advantages": "Used in the production of soaps, detergents, and as a pH adjuster",
+                "disadvantages": "Highly corrosive, can cause severe burns, and is irritating to the eyes and respiratory system"
+            },
+            "phosphoric acid": {
+                "toxicity_category": "Category 2",
+                "health_hazards": "Corrosive, can cause burns",
+                "advantages": "Used in the production of fertilizers, cleaning agents, and food additives",
+                "disadvantages": "Corrosive, can cause severe burns, and is irritating to the eyes and respiratory system"
+            },
+            "hydrogen sulfide": {
+                "toxicity_category": "Category 1",
+                "health_hazards": "Highly toxic, flammable",
+                "advantages": "Used in the production of other chemicals and as a fuel",
+                "disadvantages": "Highly toxic, flammable, and irritating to the eyes and respiratory system"
+            },
+            "carbon monoxide": {
+                "toxicity_category": "Category 1",
+                "health_hazards": "Highly toxic, asphyxiation risk",
+                "advantages": "Used in the production of other chemicals and as a fuel",
+                "disadvantages": "Highly toxic, can cause asphyxiation and death"
+            },
+            "nitrogen": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Asphyxiation risk in high concentrations",
+                "advantages": "Used in the production of fertilizers, explosives, and as a coolant",
+                "disadvantages": "Can cause asphyxiation in high concentrations"
+            },
+            "oxygen": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Increased fire risk in high concentrations",
+                "advantages": "Essential for life, used in medical applications and as an oxidizing agent",
+                "disadvantages": "Can increase the risk of fire and explosion in high concentrations"
+            },
+            "argon": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Asphyxiation risk in high concentrations",
+                "advantages": "Used in the production of light bulbs, welding, and as a shielding gas",
+                "disadvantages": "Can cause asphyxiation in high concentrations"
+            },
+            "helium": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Asphyxiation risk in high concentrations",
+                "advantages": "Used in cryogenics, as a lifting gas, and in medical applications",
+                "disadvantages": "Can cause asphyxiation in high concentrations"
+            },
+            "water": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Contamination can lead to health issues",
+                "advantages": "Essential for all forms of life, universal solvent",
+                "disadvantages": "Can cause flooding, contamination can lead to health issues"
+            },
+            "glucose": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Excessive intake can lead to health issues",
+                "advantages": "Primary energy source for living organisms",
+                "disadvantages": "Excessive intake can lead to obesity and diabetes"
+            },
+            "calcium carbonate": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Excessive consumption can lead to kidney stones",
+                "advantages": "Used as a calcium supplement and antacid",
+                "disadvantages": "Excessive consumption can lead to kidney stones"
+            },
+            "acetic acid": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Can be corrosive in concentrated forms",
+                "advantages": "Used as a preservative and flavoring agent",
+                "disadvantages": "Can be corrosive in concentrated forms"
+            },
+            "benzene": {
+                "toxicity_category": "Category 1",
+                "health_hazards": "Carcinogenic, harmful to health",
+                "advantages": "Used in the production of various chemicals and plastics",
+                "disadvantages": "Carcinogenic and harmful to human health"
+            },
+            "formaldehyde": {
+                "toxicity_category": "Category 1",
+                "health_hazards": "Toxic, can cause respiratory issues",
+                "advantages": "Used in the production of resins and as a disinfectant",
+                "disadvantages": "Toxic and can cause respiratory issues"
+            },
+            "toluene": {
+                "toxicity_category": "Category 2",
+                "health_hazards": "Can cause neurological damage",
+                "advantages": "Effective solvent for paints and coatings",
+                "disadvantages": "Can cause neurological damage with prolonged exposure"
+            },
+            "silicon dioxide": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Can cause respiratory issues when inhaled as dust",
+                "advantages": "Used in glass production and as a food additive",
+                "disadvantages": "Can cause respiratory issues when inhaled as dust"
+            },
+            "magnesium sulfate": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Can cause diarrhea in high doses",
+                "advantages": "Used as a laxative and in agriculture as a fertilizer",
+                "disadvantages": "Can cause diarrhea in high doses"
+            },
+            "potassium chloride": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Excessive intake can lead to hyperkalemia",
+                "advantages": "Used as a salt substitute and in fertilizers",
+                "disadvantages": "Excessive intake can lead to hyperkalemia"
+            },
+            "zinc oxide": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Can cause skin irritation",
+                "advantages": "Used in sunscreens and as a skin protectant",
+                "disadvantages": "Can cause skin irritation in some individuals"
+            },
+            "copper sulfate": {
+                "toxicity_category": "Category 2",
+                "health_hazards": "Toxic to aquatic life, can cause skin irritation",
+                "advantages": "Used as a fungicide and algicide",
+                "disadvantages": "Toxic to aquatic life and can cause skin irritation"
+            },
+            "lactic acid": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Can cause digestive issues in high concentrations",
+                "advantages": "Used as a food preservative and in cosmetics",
+                "disadvantages": "Can cause digestive issues in high concentrations"
+            },
+            "ethyl acetate": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Flammable, can cause respiratory irritation",
+                "advantages": "Used as a solvent in paints and coatings",
+                "disadvantages": "Flammable and can cause respiratory irritation"
+            },
+            "glycerol": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Excessive consumption can lead to gastrointestinal issues",
+                "advantages": "Used in food, pharmaceuticals, and cosmetics",
+                "disadvantages": "Excessive consumption can lead to gastrointestinal issues"
+            },
+            "iron(III) oxide": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Can cause respiratory issues when inhaled as dust",
+                "advantages": "Used as a pigment and in iron production",
+                "disadvantages": "Can cause respiratory issues when inhaled as dust"
+            },
+            "aluminum oxide": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Can cause respiratory issues when inhaled as dust",
+                "advantages": "Used as an abrasive and in ceramics",
+                "disadvantages": "Can cause respiratory issues when inhaled as dust"
+            },
+            "calcium sulfate": {
+                "toxicity_category": "Category 5",
+                "health_hazards": "Can cause gastrointestinal issues in high doses",
+                "advantages": "Used in plaster and as a food additive",
+                "disadvantages": "Can cause gastrointestinal issues in high doses"
+            },
+            "titanium dioxide": {
+                "toxicity_category": "Category 4",
+                "health_hazards": "Can cause respiratory issues when inhaled as dust",
+                "advantages": "Used as a pigment and in sunscreens",
+                "disadvantages": "Can cause respiratory issues when inhaled as dust"
+            },
+            "sulfur dioxide": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Respiratory irritant, can cause lung damage",
+    "advantages": "Used in the production of sulfuric acid and as a preservative",
+    "disadvantages": "Can cause respiratory issues and contribute to acid rain"
+},
+"hydrofluoric acid": {
+    "toxicity_category": "Category 1",
+    "health_hazards": "Highly corrosive, toxic, causes severe burns",
+    "advantages": "Used in glass etching and chemical manufacturing",
+    "disadvantages": "Highly toxic, can cause severe tissue damage and systemic toxicity"
+},
+"ethyl benzene": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Can cause dizziness, central nervous system effects",
+    "advantages": "Used in the production of styrene and other chemicals",
+    "disadvantages": "Can be harmful to the respiratory system with long-term exposure"
+},
+"formic acid": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Irritating to skin and eyes, can cause burns",
+    "advantages": "Used as a preservative, antibacterial agent, and in rubber production",
+    "disadvantages": "Irritating and can cause burns in concentrated form"
+},
+"oxalic acid": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Can cause kidney damage if ingested",
+    "advantages": "Used in cleaning agents, rust removal, and bleaching",
+    "disadvantages": "Can cause toxicity and kidney issues if ingested in large amounts"
+},
+"propane": {
+    "toxicity_category": "Category 4",
+    "health_hazards": "Flammable, can cause asphyxiation in confined spaces",
+    "advantages": "Widely used as a fuel for heating and cooking",
+    "disadvantages": "Highly flammable and poses asphyxiation risk in confined spaces"
+},
+"isopropyl alcohol": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Flammable, can cause dizziness and skin irritation",
+    "advantages": "Used as a disinfectant, solvent, and cleaning agent",
+    "disadvantages": "Flammable and can cause skin and respiratory irritation with prolonged exposure"
+},
+"boric acid": {
+    "toxicity_category": "Category 4",
+    "health_hazards": "Can cause irritation to the skin and eyes",
+    "advantages": "Used in antiseptics, insecticides, and flame retardants",
+    "disadvantages": "Can cause irritation and may be toxic if ingested in large quantities"
+},
+"ethylene glycol": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Toxic if ingested, can cause kidney failure",
+    "advantages": "Used in antifreeze, coolants, and hydraulic fluids",
+    "disadvantages": "Highly toxic if ingested and can cause severe health problems"
+},
+"tetrachloroethylene": {
+    "toxicity_category": "Category 1",
+    "health_hazards": "Carcinogenic, harmful to the nervous system",
+    "advantages": "Used in dry cleaning and degreasing",
+    "disadvantages": "Can cause cancer and long-term neurological damage"
+},
+"ammonium nitrate": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Can cause respiratory issues if inhaled",
+    "advantages": "Used in fertilizers and explosives",
+    "disadvantages": "Can be explosive under certain conditions"
+},
+"dimethyl sulfoxide (DMSO)": {
+    "toxicity_category": "Category 4",
+    "health_hazards": "Can cause skin irritation and dizziness",
+    "advantages": "Used as a solvent and in pharmaceuticals",
+    "disadvantages": "May cause skin irritation and other mild side effects"
+},
+"sodium bicarbonate": {
+    "toxicity_category": "Category 5",
+    "health_hazards": "Can cause stomach upset in large amounts",
+    "advantages": "Used as a leavening agent, antacid, and in cleaning",
+    "disadvantages": "Excessive consumption can cause stomach issues"
+},
+"peracetic acid": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Highly corrosive, can cause burns",
+    "advantages": "Effective disinfectant and sanitizer",
+    "disadvantages": "Corrosive and irritating to skin, eyes, and respiratory system"
+},
+"pyridine": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Flammable, can cause liver and kidney damage",
+    "advantages": "Used in the production of pesticides and pharmaceuticals",
+    "disadvantages": "Flammable and can be harmful with prolonged exposure"
+},
+"sodium nitrate": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Can cause respiratory irritation",
+    "advantages": "Used in fertilizers and food preservation",
+    "disadvantages": "Can contribute to respiratory issues and environmental pollution"
+},
+"acetylene": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Highly flammable, can cause dizziness",
+    "advantages": "Used in welding and as a fuel",
+    "disadvantages": "Highly flammable and can cause respiratory irritation"
+},
+"ethylene oxide": {
+    "toxicity_category": "Category 1",
+    "health_hazards": "Carcinogenic, mutagenic",
+    "advantages": "Used in sterilization and the production of other chemicals",
+    "disadvantages": "Highly carcinogenic and mutagenic with long-term exposure"
+},
+"butane": {
+    "toxicity_category": "Category 4",
+    "health_hazards": "Highly flammable, can cause dizziness",
+    "advantages": "Used as a fuel and in lighters",
+    "disadvantages": "Highly flammable and poses risk of asphyxiation in confined spaces"
+},
+"methylamine": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Toxic, can cause respiratory issues",
+    "advantages": "Used in the production of pesticides and solvents",
+    "disadvantages": "Highly toxic and irritating to respiratory system",
+    
+},
+"hexane": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Neurotoxic, flammable",
+    "advantages": "Used as a solvent in industrial applications",
+    "disadvantages": "Can cause nerve damage with prolonged exposure, highly flammable"
+},
+"ethylene glycol": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Toxic if ingested, can cause kidney damage",
+    "advantages": "Used as an antifreeze and in hydraulic brake fluids",
+    "disadvantages": "Highly toxic if ingested, can lead to severe health issues"
+},
+"propylene glycol": {
+    "toxicity_category": "Category 4",
+    "health_hazards": "Can cause skin irritation in sensitive individuals",
+    "advantages": "Used in food products, cosmetics, and pharmaceuticals",
+    "disadvantages": "May cause irritation in sensitive individuals"
+},
+"butane": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Highly flammable, asphyxiation risk",
+    "advantages": "Used as a fuel and in aerosol propellants",
+    "disadvantages": "Highly flammable and can displace oxygen, leading to asphyxiation"
+},
+"methyl ethyl ketone": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Flammable, respiratory irritant",
+    "advantages": "Effective solvent used in coatings and adhesives",
+    "disadvantages": "Highly flammable, can cause irritation to eyes and lungs"
+},"hexane": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Neurotoxic, flammable",
+    "advantages": "Used as a solvent in industrial applications",
+    "disadvantages": "Can cause nerve damage with prolonged exposure, highly flammable"
+},
+"ethylene glycol": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Toxic if ingested, can cause kidney damage",
+    "advantages": "Used as an antifreeze and in hydraulic brake fluids",
+    "disadvantages": "Highly toxic if ingested, can lead to severe health issues"
+},
+"propylene glycol": {
+    "toxicity_category": "Category 4",
+    "health_hazards": "Can cause skin irritation in sensitive individuals",
+    "advantages": "Used in food products, cosmetics, and pharmaceuticals",
+    "disadvantages": "May cause irritation in sensitive individuals"
+},
+"butane": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Highly flammable, asphyxiation risk",
+    "advantages": "Used as a fuel and in aerosol propellants",
+    "disadvantages": "Highly flammable and can displace oxygen, leading to asphyxiation"
+},
+"methyl ethyl ketone": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Flammable, respiratory irritant",
+    "advantages": "Effective solvent used in coatings and adhesives",
+    "disadvantages": "Highly flammable, can cause irritation to eyes and lungs"
+},
+"sodium bicarbonate": {
+    "toxicity_category": "Category 5",
+    "health_hazards": "Can cause mild irritation",
+    "advantages": "Used in baking, cleaning, and fire extinguishers",
+    "disadvantages": "May cause mild irritation in sensitive individuals"
+},
+"boric acid": {
+    "toxicity_category": "Category 4",
+    "health_hazards": "Can cause skin irritation",
+    "advantages": "Used in antiseptics, insecticides, and flame retardants",
+    "disadvantages": "Can cause irritation to the skin and eyes"
+},
+"sodium sulfate": {
+    "toxicity_category": "Category 5",
+    "health_hazards": "May cause mild irritation",
+    "advantages": "Used in detergents, glass production, and as a drying agent",
+    "disadvantages": "May cause irritation to the skin and eyes"
+},
+"sodium hypochlorite": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Corrosive, can cause burns",
+    "advantages": "Used as a disinfectant and bleach",
+    "disadvantages": "Highly corrosive, can cause severe skin burns and respiratory issues"
+},
+"potassium nitrate": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Can irritate skin and eyes",
+    "advantages": "Used in fertilizers and food preservation",
+    "disadvantages": "Can cause skin and respiratory irritation"
+},
+"diethyl ether": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Highly flammable, can cause dizziness",
+    "advantages": "Used as a solvent and anesthetic",
+    "disadvantages": "Highly flammable, inhalation can cause dizziness and nausea"
+},
+"phenol": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Corrosive, toxic if ingested",
+    "advantages": "Used in the production of plastics and as a disinfectant",
+    "disadvantages": "Corrosive, can cause severe burns, and is toxic if ingested"
+},
+"hydrazine": {
+    "toxicity_category": "Category 1",
+    "health_hazards": "Highly toxic, carcinogenic",
+    "advantages": "Used as a rocket fuel and in chemical synthesis",
+    "disadvantages": "Highly toxic, corrosive, and carcinogenic"
+},
+"tetracycline": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Can cause gastrointestinal issues",
+    "advantages": "Used as an antibiotic for bacterial infections",
+    "disadvantages": "Can cause digestive disturbances and allergic reactions"
+},
+"ammonium nitrate": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Can irritate skin and eyes",
+    "advantages": "Used in fertilizers and explosives",
+    "disadvantages": "Can cause irritation and is an explosion hazard under certain conditions"
+},
+"chloroform": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Carcinogenic, can cause dizziness and nausea",
+    "advantages": "Used as a solvent and in the production of refrigerants",
+    "disadvantages": "Toxic, carcinogenic, and harmful when inhaled"
+},
+"acetylene": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Highly flammable, asphyxiation risk",
+    "advantages": "Used in welding and cutting processes",
+    "disadvantages": "Highly flammable and can displace oxygen, leading to asphyxiation"
+},
+"naphthalene": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Carcinogenic, can cause respiratory issues",
+    "advantages": "Used in mothballs and as a chemical intermediate",
+    "disadvantages": "Carcinogenic, can cause skin and respiratory irritation"
+},
+"ethylene": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Flammable, can cause dizziness",
+    "advantages": "Used in the production of plastics and chemicals",
+    "disadvantages": "Highly flammable, inhalation can cause dizziness and nausea"
+},
+"perchloroethylene": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Toxic, can cause dizziness and nausea",
+    "advantages": "Used in dry cleaning and as a solvent",
+    "disadvantages": "Toxic, prolonged exposure can lead to health issues"
+},
+"bromine": {
+    "toxicity_category": "Category 2",
+    "health_hazards": "Corrosive, can cause burns",
+    "advantages": "Used in flame retardants and water treatment",
+    "disadvantages": "Corrosive, can cause skin burns and respiratory issues"
+},
+"iodine": {
+    "toxicity_category": "Category 3",
+    "health_hazards": "Can cause skin irritation",
+    "advantages": "Used as an antiseptic and in radiographic contrast",
+    "disadvantages": "Can cause skin irritation and allergic reactions"
+},
+"mercury": {
+    "toxicity_category": "Category 1",
+    "health_hazards": "Highly toxic, neurotoxic",
+    "advantages": "Used in thermometers, dental amalgams, and fluorescent lamps",
+    "disadvantages": "Highly toxic, can cause neurological damage and is harmful to the environment"
+},
+"lead": {
+    "toxicity_category": "Category 1",
+    "health_hazards": "Highly toxic, can cause neurological damage",
+    "advantages": "Used in batteries and radiation shielding",
+    "disadvantages": "Highly toxic, prolonged exposure can cause neurological damage"
+},
+"arsenic": {
+    "toxicity_category": "Category 1",
+    "health_hazards": "Carcinogenic, highly toxic",
+    "advantages": "Used in pesticides and wood preservatives",
+    "disadvantages": "Carcinogenic and highly toxic to humans and the environment"
+},
+"cadmium": {
+    "toxicity_category": "Category 1",
+    "health_hazards": "Carcinogenic, can cause lung and kidney damage",
+    "advantages": "Used in batteries and pigments",
+    "disadvantages": "Highly toxic, can cause serious health problems with prolonged exposure"
+}
+
+        };
+
+        function displayChemicalDetails() {
+            const chemicalInput = document.getElementById("chemicalInput").value.toLowerCase().trim();
+            const chemicalName = document.getElementById("chemicalName");
+            const toxicityCategory = document.getElementById("toxicityCategory");
+            const healthHazards = document.getElementById("healthHazards");
+            const advantages = document.getElementById("advantages");
+            const disadvantages = document.getElementById("disadvantages");
+
+            const ctx = document.getElementById('pieChart').getContext('2d');
+
+            if (chemicals.hasOwnProperty(chemicalInput)) {
+                const chemicalDetails = chemicals[chemicalInput];
+                chemicalName.textContent = chemicalInput.charAt(0).toUpperCase() + chemicalInput.slice(1);
+                toxicityCategory.textContent = `Toxicity Category: ${chemicalDetails.toxicity_category}`;
+                healthHazards.textContent = `Health Hazards: ${chemicalDetails.health_hazards}`;
+                advantages.textContent = `Advantages: ${chemicalDetails.advantages}`;
+                disadvantages.textContent = `Disadvantages: ${chemicalDetails.disadvantages}`;
+
+                // Set up data for the pie chart
+                const categoryData = {
+                    'Category 1': 100,
+                    'Category 2': 80,
+                    'Category 3': 60,
+                    'Category 4': 40,
+                    'Category 5': 20
+                };
+
+                const categoryValue = categoryData[chemicalDetails.toxicity_category];
+                const pieData = [categoryValue, 100 - categoryValue];
+
+                // Destroy previous chart if it exists
+                if (pieChart) {
+                    pieChart.destroy();
+                }
+
+                // Create pie chart
+                pieChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Toxicity Level', 'Safe Level'],
+                        datasets: [{
+                            data: pieData,
+                            backgroundColor: ['#ff0000', '#b3ff4d'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.raw + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } else {
+                chemicalName.textContent = "Chemical not found";
+                toxicityCategory.textContent = "";
+                healthHazards.textContent = "";
+                advantages.textContent = "";
+                disadvantages.textContent = "";
+
+                if (pieChart) {
+                    pieChart.destroy();
+                }
+            }
+        }
+    </script>
+    <script>
+        window.embeddedChatbotConfig = {
+        chatbotId: "ZEN-NCQUYOBEpRbiY4fLL",
+        domain: "www.chatbase.co"
+        }
+        </script>
+        <script
+        src="https://www.chatbase.co/embed.min.js"
+        chatbotId="ZEN-NCQUYOBEpRbiY4fLL"
+        domain="www.chatbase.co"
+        defer>
+        </script>
+</body>
+</html>
