@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Signup</title>
+    <style>
+        /* Reset and general styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            background-color: #f8f9fa;
+            background-image: url('https://www.freepik.com/vectors/chemistry-wallpaper'); /* Replace with your background image URL */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .container {
+            display: flex;
+            width: 100vw; /* Full viewport width */
+            height: 100vh; /* Full viewport height */
+            margin: 0;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 15px; /* Rounded corners for the container */
+            overflow: hidden; /* Ensure content doesn't overflow the container */
+        }
+
+        .left-side {
+            width: 50%;
+            height: 100%; /* Ensure it covers full height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden; /* Prevents GIF from overflowing */
+        }
+
+        .left-side img {
+            max-width: 100%;
+            height: auto; /* Maintain aspect ratio */
+            width: auto; /* Maintain aspect ratio */
+            border-radius: 15px; /* Match the container's rounded corners */
+        }
+
+        .right-side {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            padding: 20px;
+            position: relative; /* Position relative for logo positioning */
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .form-toggle {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .form-toggle button {
+            font-size: 16px;
+            padding: 10px 20px;
+            border: 2px solid #e57373; /* Light red border */
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: transparent;
+            color: #e57373; /* Light red text color */
+        }
+
+        .form-toggle .active {
+            background-color: #e57373; /* Light red background */
+            color: white;
+            border-color: #e57373; /* Light red border */
+        }
+
+        .form-toggle button:not(.active):hover {
+            background-color: #f8d7da; /* Light red background on hover */
+            color: #e57373;
+        }
+
+        .form {
+            display: none;
+        }
+
+        .form.active {
+            display: block;
+        }
+
+        .form h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form input[type="email"],
+        .form input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form input[type="email"]:focus,
+        .form input[type="password"]:focus {
+            border-color: #e57373;
+            outline: none;
+        }
+
+        .form button {
+            width: 100%;
+            padding: 12px;
+            background-color: #e57373; /* Light red background */
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .form button:hover {
+            background-color: #d32f2f; /* Darker red on hover */
+        }
+
+        .forgot-password {
+            display: block;
+            text-align: right; /* Align to the right */
+            margin: 10px 0;
+            font-size: 14px;
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+            color: #0056b3; /* Darker blue on hover */
+        }
+
+        .website-logo {
+            position: absolute; /* Absolute positioning for layering */
+            top: 20px; /* Adjust top padding for logo position */
+            left: 20px; /* Adjust left padding for logo position */
+            width: 200px; /* Set logo width */
+            height: 100px; /* Maintain aspect ratio */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-side">
+            <img src="https://media.tenor.com/YbeueCPsUHEAAAAM/hello-wave.gif" alt="Hello GIF">
+        </div>
+        <div class="right-side">
+            <img src="Screenshot(95).png" alt="Your Website Logo" class="website-logo">
+            <div class="form-container">
+                <div class="form-toggle">
+                    <button id="login-btn" class="active">Login</button>
+                    <button id="signup-btn">Signup</button>
+                </div>
+                <div id="login-form" class="form active">
+                    <h2>Login</h2>
+                    <form id="login-form-action" action="submit_form.php" method="post">
+                        <label for="login-email">Email:</label>
+                        <input type="email" id="login-email" name="email" required>
+                        <label for="login-password">Password:</label>
+                        <input type="password" id="login-password" name="password" required>
+                        <button type="submit">Login</button>
+                        <a href="#" class="forgot-password">Forgot Password?</a>
+                    </form>
+                </div>
+                <div id="signup-form" class="form">
+                    <h2>Signup</h2>
+                    <form id="signup-form-action" method="post">
+                        <label for="signup-email">Email:</label>
+                        <input type="email" id="signup-email" name="email" required>
+                        <label for="signup-password">Password:</label>
+                        <input type="password" id="signup-password" name="password" required>
+                        <label for="signup-confirm-password">Confirm Password:</label>
+                        <input type="password" id="signup-confirm-password" name="confirm_password" required>
+                        <button type="submit">Signup</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('login-btn').addEventListener('click', function() {
+            document.getElementById('login-form').classList.add('active');
+            document.getElementById('signup-form').classList.remove('active');
+            this.classList.add('active');
+            document.getElementById('signup-btn').classList.remove('active');
+        });
+
+        document.getElementById('signup-btn').addEventListener('click', function() {
+            document.getElementById('signup-form').classList.add('active');
+            document.getElementById('login-form').classList.remove('active');
+            this.classList.add('active');
+            document.getElementById('login-btn').classList.remove('active');
+        });
+
+        document.getElementById('signup-form-action').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            alert('Signup successful!');
+            window.location.href = 'dashboard.html';
+        });
+
+        document.getElementById('login-form-action').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            alert('Login successful!');
+            window.location.href = 'dashboard.html';
+        });
+    </script>
+</body>
+</html>
